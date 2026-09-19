@@ -9,6 +9,8 @@ export const UPDATE_REWARD = 1;
 export const UPDATE_ACCEPT_COOLDOWN_MS = 15 * 1000;
 export const UPDATE_REWARD_COOLDOWN_MS = 60 * 1000;
 export const WATCH_COST = 1;
+/** A watch charge unlocks live locations on ONE transport for this long. */
+export const WATCH_PASS_MS = 30 * 60 * 1000;
 export const SIGNUP_POINTS = 10;
 export const REFERRAL_REWARD = 5;
 export const STOP_ALERT_COOLDOWN_MS = 30 * 60 * 1000;

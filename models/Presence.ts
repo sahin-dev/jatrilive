@@ -8,6 +8,8 @@ const PresenceSchema = new Schema(
     active: { type: Boolean, default: true },
     lastSeenAt: { type: Date, default: Date.now, index: true },
     lastNotifiedAt: { type: Date, default: null },
+    /** Paid watch pass: live locations on this transport are visible until this instant. */
+    paidUntil: { type: Date, default: null, index: true },
   },
   { timestamps: true }
 );
