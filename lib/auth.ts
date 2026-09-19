@@ -8,7 +8,11 @@ const COOKIE_NAME = "jatrilive_session";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "development-secret-change-me");
 
 type SessionPayload = { userId: string; role: "user" | "admin" };
-export type CurrentUser = { _id: Types.ObjectId; name: string; email: string; role: "user" | "admin"; points: number; regularTransports: Types.ObjectId[] };
+export type CurrentUser = {
+  _id: Types.ObjectId; name: string; email: string; role: "user" | "admin"; points: number;
+  regularTransports: Types.ObjectId[]; referralCode?: string; leaderboardOptIn: boolean;
+  acceptedUpdates: number; corroboratedUpdates: number; flaggedReports: number; trustLevel: "newcomer" | "contributor" | "trusted";
+};
 
 export async function createSession(payload: SessionPayload) {
   const token = await new SignJWT(payload)
@@ -46,7 +50,7 @@ export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
   await connectDB();
-  const user = await User.findById(session.userId).select("name email role points regularTransports").lean();
+  const user = await User.findById(session.userId).select("name email role points regularTransports referralCode leaderboardOptIn acceptedUpdates corroboratedUpdates flaggedReports trustLevel").lean();
   return user as CurrentUser | null;
 }
 

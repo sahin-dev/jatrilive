@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const user = await requireApiUser();
     const notifications = await Notification.find({ userId: user._id }).sort({ createdAt: -1 }).limit(20).lean();
-    return NextResponse.json({ notifications: notifications.map((item) => ({ id: String(item._id), title: item.title, message: item.message, read: item.read, createdAt: item.createdAt })) });
+    return NextResponse.json({ notifications: notifications.map((item) => ({ id: String(item._id), title: item.title, message: item.message, read: item.read, kind: item.kind, url: item.url, createdAt: item.createdAt })) });
   } catch (error) { return apiError(error); }
 }
 

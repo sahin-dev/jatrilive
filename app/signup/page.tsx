@@ -1,14 +1,17 @@
 import { BellRing, Coins, ShieldCheck } from "lucide-react";
 import { AuthForm } from "@/components/AuthForm";
 import { getTransportCards } from "@/lib/transport-data";
+import { getDict, getLang } from "@/lib/i18n-server";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Join" };
 
 export default async function SignupPage() {
-  const transports = await getTransportCards();
+  const lang = await getLang();
+  const transports = await getTransportCards("", lang);
+  const t = getDict(lang);
   return <div className="auth-shell">
-    <aside className="auth-aside"><span className="eyebrow light">MOVE DHAKA TOGETHER</span><h1>A clearer commute starts with you.</h1><p>Share what you see. Get the live information you need. Your identity always stays private.</p><div className="auth-benefits"><div><span><Coins size={19} /></span>10 free points when you join</div><div><span><BellRing size={19} /></span>Helpful updates from real passengers</div><div><span><ShieldCheck size={19} /></span>No personal information shown publicly</div></div></aside>
-    <section className="auth-panel"><AuthForm mode="signup" transports={transports.map((item) => ({ id: item.id, name: item.name }))} /></section>
+    <aside className="auth-aside"><span className="eyebrow light">{t.moveDhaka}</span><h1>{t.authSignupAsideTitle}</h1><p>{t.authSignupAsideSub}</p><div className="auth-benefits"><div><span><Coins size={19} /></span>{t.benefit10}</div><div><span><BellRing size={19} /></span>{t.benefitUpdates}</div><div><span><ShieldCheck size={19} /></span>{t.benefitPrivacy}</div></div></aside>
+    <section className="auth-panel"><AuthForm mode="signup" transports={transports.map((item) => ({ id: item.id, name: item.name }))} lang={lang} /></section>
   </div>;
 }

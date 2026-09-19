@@ -3,13 +3,17 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BusFront, Eye, MapPin, Search, UsersRound } from "lucide-react";
+import { getDict, type Lang } from "@/lib/i18n";
 
 export type TransportCardData = {
   id: string; name: string; slug: string; imageUrl?: string; routeName: string;
   routeStops: string[]; color: string; watchers: number; travellers: number; vehicles: number;
+  reliability?: { score: number; label: "strong" | "fair" | "limited"; updates7d: number; activeDays7d: number; averageMinutesBetweenUpdates: number | null; lastUpdateAt: string | null };
+  fareMin?: number | null; fareMax?: number | null; fareCurrency?: string; fareNote?: string; fareSourceUrl?: string;
 };
 
-export function TransportExplorer({ transports }: { transports: TransportCardData[] }) {
+export function TransportExplorer({ transports, lang = "en" }: { transports: TransportCardData[]; lang?: Lang }) {
+  const t = getDict(lang);
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -21,12 +25,12 @@ export function TransportExplorer({ transports }: { transports: TransportCardDat
     <>
       <div className="search-box">
         <Search size={22} />
-        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search bus, route, or stop — e.g. Alif, Mirpur" aria-label="Search transports" />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={lang === "bn" ? "বাস, রুট বা স্টপ খুঁজুন — যেমন আলিফ, মিরপুর" : "Search bus, route, or stop — e.g. Alif, Mirpur"} aria-label="Search transports" />
         <span className="kbd">⌘ K</span>
       </div>
       <div className="result-head">
-        <p><strong>{filtered.length}</strong> routes available</p>
-        <span><i className="live-dot" /> Updated by passengers</span>
+        <p><strong>{filtered.length}</strong> {t.routesAvailable}</p>
+        <span><i className="live-dot" /> {t.updatedByPassengers}</span>
       </div>
       {filtered.length ? (
         <div className="transport-grid">
@@ -35,21 +39,22 @@ export function TransportExplorer({ transports }: { transports: TransportCardDat
               <div className="route-visual" style={{ "--route-color": transport.color } as React.CSSProperties}>
                 <div className="bus-icon"><BusFront size={25} /></div>
                 <div className="route-line"><i /><i /><i /><i /></div>
-                <span className="vehicle-chip">{transport.vehicles ? `${transport.vehicles} live` : "Awaiting update"}</span>
+                <span className="vehicle-chip">{transport.vehicles ? `${transport.vehicles} ${t.live}` : t.awaitingUpdate}</span>
               </div>
               <div className="card-content">
-                <div className="card-title-row"><div><span className="eyebrow">PUBLIC BUS</span><h3>{transport.name}</h3></div><ArrowRight size={20} /></div>
+                <div className="card-title-row"><div><span className="eyebrow">{t.publicBus}</span><h3>{transport.name}</h3></div><ArrowRight size={20} /></div>
                 <p className="route-name"><MapPin size={16} /> {transport.routeName}</p>
                 <div className="stops-preview">{transport.routeStops.slice(0, 3).map((stop) => <span key={stop}>{stop}</span>)}</div>
                 <div className="card-stats">
-                  <span><Eye size={17} /><strong>{transport.watchers}</strong> watching</span>
-                  <span><UsersRound size={17} /><strong>{transport.travellers}</strong> travelling</span>
+                  <span><Eye size={17} /><strong>{transport.watchers}</strong> {t.watching.toLowerCase()}</span>
+                  <span><UsersRound size={17} /><strong>{transport.travellers}</strong> {t.travelling.toLowerCase()}</span>
+                  <span className={`reliability reliability-${transport.reliability?.label || "limited"}`}><strong>{transport.reliability?.score || 0}%</strong> {lang === "bn" ? "নির্ভরযোগ্য" : "reliable"}</span>
                 </div>
               </div>
             </Link>
           ))}
         </div>
-      ) : <div className="empty-state"><BusFront size={36} /><h3>No route found</h3><p>Try a company name, route, or nearby stop.</p></div>}
+      ) : <div className="empty-state"><BusFront size={36} /><h3>{t.noRouteFound}</h3><p>{t.noRouteHelp}</p></div>}
     </>
   );
 }

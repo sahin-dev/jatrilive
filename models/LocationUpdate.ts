@@ -8,6 +8,7 @@ const LocationUpdateSchema = new Schema(
     location: { type: { type: String, enum: ["Point"], default: "Point" }, coordinates: [Number] },
     accuracy: Number,
     rewarded: { type: Boolean, default: true },
+    helpedCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

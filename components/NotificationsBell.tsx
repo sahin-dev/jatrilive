@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, Check } from "lucide-react";
 
-type Item = { id: string; title: string; message: string; read: boolean; createdAt: string };
+type Item = { id: string; title: string; message: string; read: boolean; createdAt: string; url?: string };
 
 export function NotificationsBell() {
   const [items, setItems] = useState<Item[]>([]);
@@ -17,7 +17,8 @@ export function NotificationsBell() {
     const next: Item[] = data.notifications;
     next.forEach((item) => {
       if (!known.current.has(item.id) && !item.read && known.current.size && "Notification" in window && Notification.permission === "granted") {
-        new Notification(item.title, { body: item.message, icon: "/icon.svg" });
+        const notification = new Notification(item.title, { body: item.message, icon: "/icon.svg" });
+        notification.onclick = () => { window.focus(); window.location.assign(item.url || "/dashboard"); };
       }
       known.current.add(item.id);
     });
@@ -28,5 +29,5 @@ export function NotificationsBell() {
   async function markRead() { await fetch("/api/notifications", { method: "PATCH" }); setItems((current) => current.map((item) => ({ ...item, read: true }))); }
   const unread = items.filter((item) => !item.read).length;
 
-  return <div className="notifications-wrap"><button className="bell-button" aria-label="Notifications" onClick={() => setOpen((value) => !value)}><Bell size={18} />{unread > 0 && <i>{unread > 9 ? "9+" : unread}</i>}</button>{open && <div className="notification-popover"><div className="notification-head"><strong>Notifications</strong>{unread > 0 && <button onClick={markRead}><Check size={13} /> Mark read</button>}</div>{items.length ? <div className="notification-list">{items.slice(0, 6).map((item) => <div className={`notification-item ${item.read ? "" : "unread"}`} key={item.id}><span /><p><strong>{item.title}</strong><small>{item.message}</small></p></div>)}</div> : <div className="notification-empty">No notifications yet.</div>}</div>}</div>;
+  return <div className="notifications-wrap"><button className="bell-button" aria-label="Notifications" onClick={() => setOpen((value) => !value)}><Bell size={18} />{unread > 0 && <i>{unread > 9 ? "9+" : unread}</i>}</button>{open && <div className="notification-popover"><div className="notification-head"><strong>Notifications</strong>{unread > 0 && <button onClick={markRead}><Check size={13} /> Mark read</button>}</div>{items.length ? <div className="notification-list">{items.slice(0, 6).map((item) => <a href={item.url || "/dashboard"} className={`notification-item ${item.read ? "" : "unread"}`} key={item.id}><span /><p><strong>{item.title}</strong><small>{item.message}</small></p></a>)}</div> : <div className="notification-empty">No notifications yet.</div>}</div>}</div>;
 }

@@ -9,6 +9,13 @@ const UserSchema = new Schema(
     regularTransports: [{ type: Schema.Types.ObjectId, ref: "Transport" }],
     points: { type: Number, default: SIGNUP_POINTS, min: 0 },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    referralCode: { type: String, unique: true, sparse: true, uppercase: true, trim: true },
+    referredBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    leaderboardOptIn: { type: Boolean, default: false },
+    acceptedUpdates: { type: Number, default: 0, min: 0 },
+    corroboratedUpdates: { type: Number, default: 0, min: 0 },
+    flaggedReports: { type: Number, default: 0, min: 0 },
+    trustLevel: { type: String, enum: ["newcomer", "contributor", "trusted"], default: "newcomer" },
   },
   { timestamps: true }
 );

@@ -7,6 +7,8 @@ const NotificationSchema = new Schema(
     title: { type: String, required: true },
     message: { type: String, required: true },
     read: { type: Boolean, default: false },
+    kind: { type: String, enum: ["stale", "stop_alert", "impact", "system"], default: "system" },
+    url: { type: String, default: "/dashboard" },
   },
   { timestamps: true }
 );

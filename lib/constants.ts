@@ -1,9 +1,12 @@
 export const APP_NAME = "JatriLive";
 export const ACTIVE_PRESENCE_MS = 5 * 60 * 1000;
 export const LIVE_VEHICLE_MS = 15 * 60 * 1000;
+export const CROWD_REPORT_MS = 20 * 60 * 1000;
 export const STALE_NOTIFICATION_MS = 60 * 1000;
 export const NOTIFICATION_COOLDOWN_MS = 5 * 60 * 1000;
 export const CLUSTER_RADIUS_METERS = 140;
 export const UPDATE_REWARD = 1;
 export const WATCH_COST = 1;
 export const SIGNUP_POINTS = 10;
+export const REFERRAL_REWARD = 5;
+export const STOP_ALERT_COOLDOWN_MS = 30 * 60 * 1000;

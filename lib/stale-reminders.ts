@@ -1,8 +1,8 @@
 import { ACTIVE_PRESENCE_MS, NOTIFICATION_COOLDOWN_MS, STALE_NOTIFICATION_MS } from "@/lib/constants";
 import { LiveVehicle } from "@/models/LiveVehicle";
-import { Notification } from "@/models/Notification";
 import { Presence } from "@/models/Presence";
 import { Transport } from "@/models/Transport";
+import { createUserNotification } from "@/lib/notifications";
 
 export async function sendStaleTransportReminders(transportId: string) {
   const now = Date.now();
@@ -36,11 +36,13 @@ export async function sendStaleTransportReminders(transportId: string) {
       { new: true }
     );
     if (!claimed) continue;
-    await Notification.create({
+    await createUserNotification({
       userId: traveller.userId,
       transportId,
       title: "Passengers need an update",
       message: `${watcherCount} ${watcherCount === 1 ? "person is" : "people are"} watching ${transport?.name || "this transport"}. Share your location if it is safe.`,
+      kind: "stale",
+      url: "/dashboard",
     });
     sent += 1;
   }

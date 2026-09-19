@@ -12,6 +12,10 @@ const schema = z.object({
   routeStops: z.array(z.string().trim().min(1)).min(2),
   imageUrl: z.string().url().or(z.literal("")).default(""),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#ff5c35"),
+  fareMin: z.number().min(0).nullable().optional(),
+  fareMax: z.number().min(0).nullable().optional(),
+  fareNote: z.string().trim().max(300).optional().default(""),
+  fareSourceUrl: z.string().url().or(z.literal("")).optional().default(""),
 });
 
 export async function GET(request: Request) {
