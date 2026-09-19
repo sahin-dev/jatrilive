@@ -13,7 +13,7 @@ const schema = z.object({
   transportId: z.string().min(1),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
-  accuracy: z.number().min(0).max(5000).nullable().optional(),
+  accuracy: z.number().min(0).nullable().optional(),
   heading: z.number().min(0).max(360).nullable().optional(),
   speed: z.number().min(0).max(100).nullable().optional(),
 });
@@ -23,7 +23,16 @@ export async function POST(request: Request) {
     const user = await requireApiUser();
     const input = schema.parse(await request.json());
     if (!(await Transport.exists({ _id: input.transportId, active: true }))) return NextResponse.json({ error: "Transport not found." }, { status: 404 });
-    if (input.accuracy && input.accuracy > 250) return NextResponse.json({ error: "Location accuracy is too low. Move near a window and try again." }, { status: 400 });
+    if (input.accuracy && input.accuracy > 250) {
+      const accuracyLabel = input.accuracy >= 1000
+        ? `${(input.accuracy / 1000).toFixed(1)} km`
+        : `${Math.round(input.accuracy)} m`;
+      return NextResponse.json({
+        error: `Location found, but it is only accurate to about ${accuracyLabel}. Turn on precise location/GPS, move near a window, or use your phone, then try again.`,
+        code: "LOW_ACCURACY",
+        accuracy: input.accuracy,
+      }, { status: 422 });
+    }
 
     const candidates = await LiveVehicle.find({
       transportId: input.transportId,

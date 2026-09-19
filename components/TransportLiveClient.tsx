@@ -75,6 +75,14 @@ export function TransportLiveClient({ transport }: { transport: Transport }) {
     }
     setUpdating(true);
     navigator.geolocation.getCurrentPosition(async (position) => {
+      if (position.coords.accuracy > 250) {
+        const accuracyLabel = position.coords.accuracy >= 1000
+          ? `${(position.coords.accuracy / 1000).toFixed(1)} km`
+          : `${Math.round(position.coords.accuracy)} m`;
+        setMessage({ type: "error", text: `Location found, but it is only accurate to about ${accuracyLabel}. Turn on precise location/GPS, move near a window, or use your phone, then try again.` });
+        setUpdating(false);
+        return;
+      }
       const response = await fetch("/api/live/update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transportId: transport.id, latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy, heading: position.coords.heading, speed: position.coords.speed }) });
       const data = await response.json();
       if (!response.ok) setMessage({ type: "error", text: data.error });
@@ -90,7 +98,7 @@ export function TransportLiveClient({ transport }: { transport: Transport }) {
         setMessage({ type: "error", text: "Your location is currently unavailable. Check that device location is turned on." });
       }
       setUpdating(false);
-    }, { enableHighAccuracy: true, timeout: 15_000, maximumAge: 10_000 });
+    }, { enableHighAccuracy: true, timeout: 20_000, maximumAge: 0 });
   }
 
   return <div className="live-layout">
