@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 const LiveMap = dynamic(() => import("@/components/LiveMap"), { ssr: false, loading: () => <div className="live-map" /> });
 type Vehicle = { id: string; latitude: number; longitude: number; lastUpdatedAt: string; updateCount: number; confidence: number };
-type Transport = { id: string; name: string; routeName: string; routeStops: string[] };
+type Transport = { id: string; name: string; routeName: string; routeStops: string[]; routeVariants?: Array<{ routeName: string; routeStops: string[]; source: string }> };
 
 export function TransportLiveClient({ transport }: { transport: Transport }) {
   const router = useRouter();
@@ -112,7 +112,7 @@ export function TransportLiveClient({ transport }: { transport: Transport }) {
       {message && <div className={`alert ${message.type}`}>{message.text}</div>}
       {permissionHelp && <div className="permission-help"><span><ShieldAlert size={19} /></span><div><strong>{permissionHelp === "blocked" ? "Allow location for this site" : "Open JatriLive securely"}</strong>{permissionHelp === "blocked" ? <ol><li>Click the lock or site-controls icon beside the address.</li><li>Set <b>Location</b> to <b>Allow</b>.</li><li>Reload the page and try again.</li></ol> : <p>Use <b>http://localhost:3000</b> during development. A network address such as <b>http://192.168…</b> needs HTTPS.</p>}<button onClick={() => window.location.reload()}><RefreshCw size={13} /> Reload page</button></div></div>}
       <div className="side-card"><h3><Bell size={15} /> Update reminders</h3><p>Travellers can receive an alert when people are watching and no fresh update has arrived for one minute.</p></div>
-      <div className="side-card"><h3>Route stops</h3><div className="route-stops">{transport.routeStops.map((stop) => <span key={stop}>{stop}</span>)}</div></div>
+      <div className="side-card"><h3>Documented routes</h3>{transport.routeVariants?.length ? <div className="route-variants">{transport.routeVariants.map((variant, index) => <details key={`${variant.routeName}-${index}`} open={transport.routeVariants?.length === 1}><summary>{variant.routeName}</summary><div className="route-stops">{variant.routeStops.map((stop, stopIndex) => <span key={`${stop}-${stopIndex}`}>{stop}</span>)}</div><small>Source: {variant.source}</small></details>)}</div> : <div className="route-stops">{transport.routeStops.map((stop) => <span key={stop}>{stop}</span>)}</div>}</div>
     </aside>
   </div>;
 }

@@ -7,6 +7,16 @@ const TransportSchema = new Schema(
     imageUrl: { type: String, default: "" },
     routeName: { type: String, required: true, trim: true },
     routeStops: [{ type: String, trim: true }],
+    routeVariants: [{
+      routeName: { type: String, required: true },
+      routeStops: [{ type: String, trim: true }],
+      source: { type: String, required: true },
+    }],
+    sourceInfo: [{
+      fileName: { type: String, required: true },
+      importedAt: { type: Date, required: true },
+    }],
+    dataStatus: { type: String, enum: ["manual", "unverified_import", "verified"], default: "manual" },
     color: { type: String, default: "#ff5c35" },
     active: { type: Boolean, default: true },
   },

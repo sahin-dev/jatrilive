@@ -12,37 +12,41 @@ export async function getTransportCards(query = "") {
   const transports = await Transport.find(filter).sort({ name: 1 }).lean();
   const cutoff = new Date(Date.now() - ACTIVE_PRESENCE_MS);
   const vehicleCutoff = new Date(Date.now() - LIVE_VEHICLE_MS);
+  const transportIds = transports.map((transport) => transport._id);
+  const [presenceCounts, vehicleCounts] = await Promise.all([
+    Presence.aggregate([
+      { $match: { transportId: { $in: transportIds }, active: true, lastSeenAt: { $gte: cutoff } } },
+      { $group: { _id: { transportId: "$transportId", mode: "$mode" }, count: { $sum: 1 } } },
+    ]),
+    LiveVehicle.aggregate([
+      { $match: { transportId: { $in: transportIds }, lastUpdatedAt: { $gte: vehicleCutoff } } },
+      { $group: { _id: "$transportId", count: { $sum: 1 } } },
+    ]),
+  ]);
+  const presenceMap = new Map(presenceCounts.map((item) => [`${String(item._id.transportId)}:${item._id.mode}`, item.count]));
+  const vehicleMap = new Map(vehicleCounts.map((item) => [String(item._id), item.count]));
 
-  return Promise.all(
-    transports.map(async (transport) => {
-      const [watchers, travellers, vehicles] = await Promise.all([
-        Presence.countDocuments({ transportId: transport._id, mode: "watching", active: true, lastSeenAt: { $gte: cutoff } }),
-        Presence.countDocuments({ transportId: transport._id, mode: "travelling", active: true, lastSeenAt: { $gte: cutoff } }),
-        LiveVehicle.countDocuments({ transportId: transport._id, lastUpdatedAt: { $gte: vehicleCutoff } }),
-      ]);
-      return {
-        id: String(transport._id),
-        name: transport.name,
-        slug: transport.slug,
-        imageUrl: transport.imageUrl,
-        routeName: transport.routeName,
-        routeStops: transport.routeStops,
-        color: transport.color,
-        watchers,
-        travellers,
-        vehicles,
-      };
-    })
-  );
+  return transports.map((transport) => ({
+    id: String(transport._id),
+    name: transport.name,
+    slug: transport.slug,
+    imageUrl: transport.imageUrl,
+    routeName: transport.routeName,
+    routeStops: transport.routeStops,
+    color: transport.color,
+    watchers: presenceMap.get(`${String(transport._id)}:watching`) || 0,
+    travellers: presenceMap.get(`${String(transport._id)}:travelling`) || 0,
+    vehicles: vehicleMap.get(String(transport._id)) || 0,
+  }));
 }
 
 export async function getTransportBySlug(slug: string) {
   await connectDB();
-  const transport = await Transport.findOne({ slug, active: true }).lean() as unknown as { _id: unknown; name: string; slug: string; imageUrl: string; routeName: string; routeStops: string[]; color: string } | null;
+  const transport = await Transport.findOne({ slug, active: true }).lean() as unknown as { _id: unknown; name: string; slug: string; imageUrl: string; routeName: string; routeStops: string[]; routeVariants?: Array<{ routeName: string; routeStops: string[]; source: string }>; color: string } | null;
   if (!transport) return null;
   return {
     id: String(transport._id), name: transport.name, slug: transport.slug,
     imageUrl: transport.imageUrl, routeName: transport.routeName,
-    routeStops: transport.routeStops, color: transport.color,
+    routeStops: transport.routeStops, routeVariants: transport.routeVariants || [], color: transport.color,
   };
 }
