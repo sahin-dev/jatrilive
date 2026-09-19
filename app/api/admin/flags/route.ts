@@ -5,8 +5,9 @@ import { apiError } from "@/lib/api";
 import { ReportFlag } from "@/models/ReportFlag";
 import { User } from "@/models/User";
 import { trustLevelFor } from "@/lib/trust";
+import { Types } from "mongoose";
 
-const schema = z.object({ id: z.string().min(1), decision: z.enum(["confirmed", "dismissed"]) });
+const schema = z.object({ id: z.string().refine((value) => Types.ObjectId.isValid(value), "Invalid report."), decision: z.enum(["confirmed", "dismissed"]) });
 
 export async function PATCH(request: Request) {
   try {

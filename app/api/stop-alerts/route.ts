@@ -5,9 +5,10 @@ import { apiError } from "@/lib/api";
 import { StopAlert } from "@/models/StopAlert";
 import { Transport } from "@/models/Transport";
 import { getLang } from "@/lib/i18n-server";
+import { Types } from "mongoose";
 
 const createSchema = z.object({
-  transportId: z.string().min(1),
+  transportId: z.string().refine((value) => Types.ObjectId.isValid(value), "Invalid transport."),
   stopIndex: z.number().int().min(0),
   stopsBefore: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(2),
 });
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
   try {
     const user = await requireApiUser();
     const transportId = new URL(request.url).searchParams.get("transportId");
+    if (transportId && !Types.ObjectId.isValid(transportId)) return NextResponse.json({ error: "Invalid transport." }, { status: 400 });
     const alerts = await StopAlert.find({ userId: user._id, ...(transportId ? { transportId } : {}) }).sort({ createdAt: -1 }).lean();
     return NextResponse.json({ alerts: alerts.map((alert) => ({
       id: String(alert._id), transportId: String(alert.transportId), stopIndex: alert.stopIndex,
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
     if (!stops[input.stopIndex]) return NextResponse.json({ error: "Stop not found." }, { status: 400 });
     const alert = await StopAlert.findOneAndUpdate(
       { userId: user._id, transportId: input.transportId, stopIndex: input.stopIndex },
-      { $set: { stopName: stops[input.stopIndex], stopsBefore: input.stopsBefore, active: true } },
+      { $set: { stopName: stops[input.stopIndex], stopsBefore: input.stopsBefore, language: lang, active: true } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
     return NextResponse.json({ alert: { id: String(alert._id), stopIndex: alert.stopIndex, stopName: alert.stopName, stopsBefore: alert.stopsBefore, active: alert.active } });
@@ -55,6 +57,7 @@ export async function DELETE(request: Request) {
     const user = await requireApiUser();
     const id = new URL(request.url).searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Alert id is required." }, { status: 400 });
+    if (!Types.ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid alert id." }, { status: 400 });
     await StopAlert.deleteOne({ _id: id, userId: user._id });
     return NextResponse.json({ ok: true });
   } catch (error) { return apiError(error); }

@@ -2,11 +2,16 @@ import { BellRing, Coins, ShieldCheck } from "lucide-react";
 import { AuthForm } from "@/components/AuthForm";
 import { getTransportCards } from "@/lib/transport-data";
 import { getDict, getLang } from "@/lib/i18n-server";
+import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Join" };
 
-export default async function SignupPage() {
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const user = await getCurrentUser();
+  const requested = (await searchParams).next;
+  if (user) redirect(requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard");
   const lang = await getLang();
   const transports = await getTransportCards("", lang);
   const t = getDict(lang);

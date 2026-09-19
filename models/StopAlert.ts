@@ -7,6 +7,7 @@ const StopAlertSchema = new Schema(
     stopIndex: { type: Number, required: true, min: 0 },
     stopName: { type: String, required: true },
     stopsBefore: { type: Number, enum: [1, 2, 3], default: 2 },
+    language: { type: String, enum: ["en", "bn"], default: "en" },
     active: { type: Boolean, default: true },
     lastTriggeredVehicleId: { type: Schema.Types.ObjectId, ref: "LiveVehicle", default: null },
     lastTriggeredAt: { type: Date, default: null },

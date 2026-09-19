@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const activeCutoff = new Date(Date.now() - ACTIVE_PRESENCE_MS);
   const weekCutoff = new Date(Date.now() - 7 * 86_400_000);
   const [updates, activeWatching, activeTravelling, transactions, notifications, weeklyRanks] = await Promise.all([
-    LocationUpdate.find({ userId: user._id }).select("createdAt helpedCount transportId").sort({ createdAt: -1 }).lean(),
+    LocationUpdate.find({ userId: user._id, rewarded: true }).select("createdAt helpedCount transportId").sort({ createdAt: -1 }).lean(),
     Presence.countDocuments({ userId: user._id, mode: "watching", active: true, lastSeenAt: { $gte: activeCutoff } }),
     Presence.countDocuments({ userId: user._id, mode: "travelling", active: true, lastSeenAt: { $gte: activeCutoff } }),
     PointTransaction.find({ userId: user._id }).sort({ createdAt: -1 }).limit(8).populate("transportId", "name slug").lean(),
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
 
     <section className="impact-card">
       <div><span className="eyebrow light">{bn ? "আপনার সাপ্তাহিক প্রভাব" : "YOUR WEEKLY IMPACT"}</span><h2>{bn ? `${number.format(weekUpdates.length)}টি আপডেটে ${number.format(routesHelped)}টি রুট সচল ছিল` : `${weekUpdates.length} updates kept ${routesHelped} routes moving`}</h2><p>{peopleHelped ? (bn ? `আপনার লাইভ রিপোর্ট ${number.format(peopleHelped)} জন অপেক্ষমাণ যাত্রীর কাছে পৌঁছেছে।` : `Your live reports reached ${peopleHelped} people who were actively watching.`) : (bn ? "আপনার পরের রিপোর্ট এখনই অপেক্ষমাণ কাউকে সাহায্য করতে পারে।" : "Your next report can help someone waiting for a bus right now.")}</p></div>
-      <div className="impact-numbers"><span><strong>{number.format(peopleHelped)}</strong><small>{bn ? "সহায়তা পেয়েছেন" : "people helped"}</small></span><span><strong>{rank ? `#${number.format(rank)}` : "—"}</strong><small>{bn ? "সাপ্তাহিক র‍্যাঙ্ক" : "weekly rank"}</small></span><span><strong>{number.format(user.corroboratedUpdates || 0)}</strong><small>{bn ? "সমর্থিত রিপোর্ট" : "corroborations"}</small></span></div>
+      <div className="impact-numbers"><span><strong>{number.format(peopleHelped)}</strong><small>{bn ? "ওয়াচার রিচ" : "watcher reach"}</small></span><span><strong>{rank ? `#${number.format(rank)}` : "—"}</strong><small>{bn ? "সাপ্তাহিক র‍্যাঙ্ক" : "weekly rank"}</small></span><span><strong>{number.format(user.corroboratedUpdates || 0)}</strong><small>{bn ? "সমর্থিত রিপোর্ট" : "corroborations"}</small></span></div>
     </section>
 
     <section className="dashboard-card badge-section"><div className="card-heading"><div><h2><Trophy size={18} /> {bn ? "ব্যাজ" : "Badges"}</h2><p>{bn ? "নিয়মিত ও সমর্থিত আপডেটে স্বীকৃতি আনলক হয়।" : "Consistent, corroborated updates unlock recognition."}</p></div><Link href="/leaderboard">{bn ? "লিডারবোর্ড দেখুন" : "View leaderboard"} →</Link></div><div className="badge-grid">{game.badges.map((badge) => <div className={`badge-card ${badge.earned ? "earned" : "locked"}`} key={badge.id}><span>{badge.icon}</span><div><strong>{badgeTitle(badge.id, badge.title, bn)}</strong><small>{badgeDescription(badge.id, badge.description, bn)}</small></div></div>)}</div></section>

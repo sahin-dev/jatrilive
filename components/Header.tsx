@@ -5,6 +5,7 @@ import { BusFront, CircleUserRound } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { NotificationsBell } from "@/components/NotificationsBell";
 import { LangToggle } from "@/components/LangToggle";
+import { MobileNav } from "@/components/MobileNav";
 
 export async function Header() {
   const [user, lang] = await Promise.all([getCurrentUser(), getLang()]);
@@ -28,7 +29,7 @@ export async function Header() {
           {user ? (
             <>
               <span className="points-pill"><span>●</span> {user.points} {t.points}</span>
-              <NotificationsBell />
+              <NotificationsBell lang={lang} />
               <span className="user-name"><CircleUserRound size={18} /> {user.name.split(" ")[0]}</span>
               <LogoutButton />
             </>
@@ -39,6 +40,11 @@ export async function Header() {
             </>
           )}
         </div>
+        <MobileNav
+          authenticated={Boolean(user)}
+          isAdmin={user?.role === "admin"}
+          labels={{ find: t.findTransport, journey: lang === "bn" ? "যাত্রা পরিকল্পনা" : "Plan a journey", leaderboard: lang === "bn" ? "লিডারবোর্ড" : "Leaderboard", activity: t.myActivity, admin: t.admin, signIn: t.signIn, join: t.joinFree }}
+        />
       </div>
     </header>
   );

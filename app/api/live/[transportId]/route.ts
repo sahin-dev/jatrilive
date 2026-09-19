@@ -67,14 +67,16 @@ export async function GET(_: Request, { params }: { params: Promise<{ transportI
         const reports = reportsByVehicle.get(id) || [];
         const crowding = crowdConsensus(reports);
         const eta = stopCoords.length >= 2
-          ? estimateEtas({ latitude, longitude, speed: vehicle.speed ?? null, lastUpdatedAt: vehicle.lastUpdatedAt }, stopCoords)
+          ? estimateEtas({ latitude, longitude, heading: vehicle.heading ?? null, speed: vehicle.speed ?? null, lastUpdatedAt: vehicle.lastUpdatedAt }, stopCoords)
           : null;
         return {
           id, latitude, longitude,
           accuracy: vehicle.accuracy, heading: vehicle.heading, speed: vehicle.speed,
           lastUpdatedAt: vehicle.lastUpdatedAt, updateCount: vehicle.updateCount, confidence: vehicle.confidence,
           witnessCount: witnessMap.get(id) || 1, crowding, eta,
-          lastConfirmedStop: eta && eta.nextStopIndex > 0 ? stopCoords[eta.nextStopIndex - 1]?.name || null : null,
+          lastConfirmedStop: eta && eta.nextStopIndex >= 0
+            ? stopCoords[eta.direction === "forward" ? eta.nextStopIndex - 1 : eta.nextStopIndex + 1]?.name || null
+            : null,
         };
       }),
       watchers, travellers, points: user.points,

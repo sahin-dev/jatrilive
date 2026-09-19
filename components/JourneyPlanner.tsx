@@ -48,25 +48,31 @@ function TransferResult({ plan, lang }: { plan: TransferPlan; lang: Lang }) {
 }
 
 function RouteMeta({ route, lang }: { route: TransportCardData; lang: Lang }) {
-  return <div className="route-meta"><span className={`reliability reliability-${route.reliability?.label || "limited"}`}>{route.reliability?.score || 0}% {lang === "bn" ? "নির্ভরযোগ্য" : "reliability"}</span>{route.fareMin !== null && route.fareMin !== undefined ? <span>৳{route.fareMin}{route.fareMax ? `–৳${route.fareMax}` : "+"}</span> : route.fareSourceUrl ? <a href={route.fareSourceUrl} target="_blank" rel="noreferrer">{lang === "bn" ? "ভাড়ার তালিকা ↗" : "Fare chart ↗"}</a> : null}</div>;
+  return <div className="route-meta"><span className={`reliability reliability-${route.reliability?.label || "limited"}`}>{route.reliability?.updates7d ? `${route.reliability.score}% ${lang === "bn" ? "নির্ভরযোগ্য" : "reliability"}` : (lang === "bn" ? "সাম্প্রতিক তথ্য নেই" : "No recent data")}</span>{route.fareMin !== null && route.fareMin !== undefined ? <span>৳{route.fareMin}{route.fareMax ? `–৳${route.fareMax}` : "+"}</span> : route.fareSourceUrl ? <a href={route.fareSourceUrl} target="_blank" rel="noreferrer">{lang === "bn" ? "ভাড়ার তালিকা ↗" : "Fare chart ↗"}</a> : null}</div>;
 }
 
 function resolveStop(input: string, stops: string[]) {
   const query = normalize(input);
+  if (!query) return undefined;
   return stops.find((stop) => normalize(stop) === query) || stops.find((stop) => normalize(stop).includes(query));
 }
 
 function buildPlans(routes: TransportCardData[], from: string, to: string): Plan[] {
   const direct: DirectPlan[] = routes.flatMap((route) => {
     const a = route.routeStops.indexOf(from); const b = route.routeStops.indexOf(to);
-    return a >= 0 && b >= 0 ? [{ type: "direct" as const, route, from, to, stops: Math.abs(b - a) }] : [];
+    return a >= 0 && b > a ? [{ type: "direct" as const, route, from, to, stops: b - a }] : [];
   }).sort((a, b) => a.stops - b.stops || (b.route.reliability?.score || 0) - (a.route.reliability?.score || 0));
   if (direct.length) return direct.slice(0, 6);
   const transfer: TransferPlan[] = [];
   for (const first of routes.filter((route) => route.routeStops.includes(from))) {
     for (const second of routes.filter((route) => route.id !== first.id && route.routeStops.includes(to))) {
       for (const shared of first.routeStops.filter((stop) => second.routeStops.includes(stop))) {
-        const stops = Math.abs(first.routeStops.indexOf(shared) - first.routeStops.indexOf(from)) + Math.abs(second.routeStops.indexOf(to) - second.routeStops.indexOf(shared));
+        const firstOrigin = first.routeStops.indexOf(from);
+        const firstTransfer = first.routeStops.indexOf(shared);
+        const secondTransfer = second.routeStops.indexOf(shared);
+        const secondDestination = second.routeStops.indexOf(to);
+        if (firstTransfer <= firstOrigin || secondDestination <= secondTransfer) continue;
+        const stops = firstTransfer - firstOrigin + secondDestination - secondTransfer;
         transfer.push({ type: "transfer", first, second, from, transfer: shared, to, stops });
       }
     }

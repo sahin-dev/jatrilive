@@ -26,7 +26,9 @@ export function AuthForm({ mode, transports = [], lang = "en" }: { mode: "login"
       const response = await fetch(`/api/auth/${mode}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Something went wrong.");
-      router.push("/dashboard");
+      const requested = new URLSearchParams(window.location.search).get("next");
+      const destination = requested && requested.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard";
+      router.push(destination);
       router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : "Something went wrong."); }
     finally { setLoading(false); }

@@ -61,7 +61,7 @@ Cookie-based language (`lang=en|bn`), dictionaries in `lib/i18n.ts`, toggle in h
 
 ### F11. Weekly impact digest
 - [x] Location updates record how many active watchers they helped
-- [x] Dashboard summarizes weekly updates, routes, people helped, and rank
+- [x] Dashboard summarizes weekly updates, routes, watcher reach, and rank
 
 ### F12. Contributor trust
 - [x] Newcomer, contributor, and trusted levels derive from volume, corroboration, and confirmed flags
@@ -74,9 +74,24 @@ Cookie-based language (`lang=en|bn`), dictionaries in `lib/i18n.ts`, toggle in h
 - [x] Seed links to the latest official BRTA Dhaka Metro fare-list page; exact values remain admin-verifiable
 
 ## Verification checklist
-- [x] `npm exec tsc -- --noEmit` clean
-- [x] `npm run build` succeeds
+- [x] `pnpm exec tsc --noEmit` clean
+- [x] `pnpm run lint` succeeds with ESLint CLI
+- [x] `pnpm test` covers forward/reverse/off-route ETA behavior
+- [x] `pnpm run build` succeeds
 - [ ] Set VAPID environment keys to enable background push delivery
 - [x] Ran `pnpm seed` against the configured target to add coordinates, Bangla names, and fare sources
 - [ ] Device E2E: signup → live API → location share with crowding → ETA present
 - [ ] Device E2E: install PWA → enable push → trigger approaching-stop alert
+
+## Stability and UX remediation (implemented)
+
+- [x] Auth-aware sharing CTAs and safe post-login return paths
+- [x] Mobile navigation with dashboard, admin, and sign-out access
+- [x] Primary sharing control promoted above secondary route details
+- [x] Recoverable network errors for location, presence, alerts, and reports
+- [x] Direction-aware vehicle clustering, ETA, stop alerts, and journey planning
+- [x] Update/reward cooldowns protect points, badges, trust, and leaderboards
+- [x] Immutable moderation snapshots preserve the location that was reported
+- [x] Admin editing supports Bangla labels, fares, and ordered stop coordinates
+- [x] Push subscription enable/disable and failure recovery
+- [x] Empty reliability state and measured average update interval

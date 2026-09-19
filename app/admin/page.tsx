@@ -30,7 +30,8 @@ export default async function AdminPage() {
   ]);
   const reviewFlags = flags.map((flag) => {
     const vehicle = flag.vehicleId as unknown as { location?: { coordinates?: [number, number] }; lastUpdatedAt?: Date; updateCount?: number };
-    return { id: String(flag._id), reason: flag.reason, note: flag.note, createdAt: flag.createdAt.toISOString(), transportName: (flag.transportId as unknown as { name?: string })?.name || "Unknown route", coordinates: vehicle?.location?.coordinates || null, vehicleUpdatedAt: vehicle?.lastUpdatedAt?.toISOString() || null, updateCount: vehicle?.updateCount || 0 };
+    const snapshot = flag.snapshot as undefined | { coordinates?: [number, number]; vehicleUpdatedAt?: Date; updateCount?: number };
+    return { id: String(flag._id), reason: flag.reason, note: flag.note, createdAt: flag.createdAt.toISOString(), transportName: (flag.transportId as unknown as { name?: string })?.name || "Unknown route", coordinates: snapshot?.coordinates || vehicle?.location?.coordinates || null, vehicleUpdatedAt: snapshot?.vehicleUpdatedAt?.toISOString() || vehicle?.lastUpdatedAt?.toISOString() || null, updateCount: snapshot?.updateCount ?? vehicle?.updateCount ?? 0 };
   });
   return <div className="page-shell"><div className="container"><div className="page-title-row"><div><span className="eyebrow accent">SYSTEM OVERVIEW</span><h1>Operations dashboard</h1><p>Live community activity and transport data.</p></div><span className="route-badge">Admin access</span></div><AdminPanel transports={transports as TransportCardData[]} stats={{ users, transports: transportCount, liveVehicles, updatesToday, watchers, travellers }} flags={reviewFlags} /></div></div>;
 }

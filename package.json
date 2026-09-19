@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/eta.test.ts",
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
@@ -25,11 +26,14 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "3.2.0",
     "@types/leaflet": "^1.9.20",
     "@types/node": "^20.19.13",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@types/web-push": "^3.6.4",
+    "eslint": "9.17.0",
+    "eslint-config-next": "15.5.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }

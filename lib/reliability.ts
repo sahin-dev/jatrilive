@@ -16,11 +16,13 @@ export async function reliabilityForTransports(transportIds: unknown[]) {
   if (!ids.length) return new Map<string, Reliability>();
   const rows = await LocationUpdate.aggregate([
     { $match: { transportId: { $in: ids }, createdAt: { $gte: since } } },
+    { $sort: { createdAt: 1 } },
     { $group: {
       _id: "$transportId",
       updates7d: { $sum: 1 },
       lastUpdateAt: { $max: "$createdAt" },
       days: { $addToSet: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Dhaka" } } },
+      timestamps: { $push: "$createdAt" },
     } },
   ]);
   return new Map(rows.map((row) => {
@@ -36,11 +38,18 @@ export async function reliabilityForTransports(transportIds: unknown[]) {
       label: score >= 70 ? "strong" : score >= 35 ? "fair" : "limited",
       updates7d: row.updates7d,
       activeDays7d,
-      averageMinutesBetweenUpdates: row.updates7d > 1 ? Math.round(7 * 24 * 60 / row.updates7d) : null,
+      averageMinutesBetweenUpdates: averageIntervalMinutes(row.timestamps),
       lastUpdateAt: new Date(row.lastUpdateAt).toISOString(),
     };
     return [String(row._id), reliability] as const;
   }));
+}
+
+function averageIntervalMinutes(values: Date[]) {
+  if (!values || values.length < 2) return null;
+  let total = 0;
+  for (let index = 1; index < values.length; index += 1) total += new Date(values[index]).getTime() - new Date(values[index - 1]).getTime();
+  return Math.round(total / (values.length - 1) / 60_000);
 }
 
 export async function reliabilityForTransport(transportId: unknown) {
