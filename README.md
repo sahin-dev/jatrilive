@@ -4,7 +4,7 @@ Community-powered live bus locations for Dhaka, built with Next.js, MongoDB, and
 
 ## Run locally
 
-1. Copy `.env.example` to `.env.local` and set `MONGODB_URI`, `JWT_SECRET`, and `CRON_SECRET`.
+1. Copy `.env.example` to `.env.local` and set `MONGODB_URI` and `JWT_SECRET`.
 2. Install packages with `pnpm install`.
 3. Load the sample transport directory with `pnpm seed`.
 4. Start the app with `pnpm dev` and open `http://localhost:3000`.
@@ -23,9 +23,9 @@ The first account created becomes the administrator. Later accounts are normal p
 - After one minute without a vehicle update, the cron route creates an in-app/browser notification for active travellers when watchers are waiting. A five-minute cooldown prevents notification spam.
 - Other passengers only see aggregate counts and vehicle positions. Names, emails, and contributor identities are never exposed.
 
-## Scheduled reminders
+## Traveller reminders without cron
 
-`vercel.json` invokes `/api/cron/notifications` every minute. Vercel sends the configured `CRON_SECRET` as a bearer token. For another host, call this endpoint every minute with the same authorization header.
+No scheduled job is required. While a passenger is watching a transport, the client sends a presence heartbeat every 45 seconds. That heartbeat checks whether the latest vehicle location is older than one minute and creates reminders for active travellers. A five-minute cooldown prevents duplicate notifications.
 
 ## Important production notes
 

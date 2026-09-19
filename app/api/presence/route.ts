@@ -5,6 +5,7 @@ import { apiError } from "@/lib/api";
 import { ACTIVE_PRESENCE_MS, WATCH_COST } from "@/lib/constants";
 import { Presence } from "@/models/Presence";
 import { PointTransaction } from "@/models/PointTransaction";
+import { sendStaleTransportReminders } from "@/lib/stale-reminders";
 
 const schema = z.object({
   transportId: z.string().min(1),
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
       { $set: { active: input.active, lastSeenAt: new Date() } },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+    if (input.active && input.mode === "watching") {
+      await sendStaleTransportReminders(input.transportId);
+    }
     return NextResponse.json({ ok: true, points: user.points });
   } catch (error) {
     if (error instanceof z.ZodError) return NextResponse.json({ error: "Invalid presence request." }, { status: 400 });
